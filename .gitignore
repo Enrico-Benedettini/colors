@@ -1,2 +1,5 @@
 app.pid
 app.log
+
+.idea/
+z3_script.py
