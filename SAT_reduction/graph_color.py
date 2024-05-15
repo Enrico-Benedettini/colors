@@ -169,15 +169,19 @@ if __name__ == '__main__':
     if res[0] == "s SATISFIABLE":
         # First get the assignment, which is on the second line of the file, and split it on spaces
         # Read the solution
-        asgn = map(int, res[1].split()[1:])
-        # Then get the variables that are positive, and get their names.
-        # This way we know that everything not printed is false.
-        # The last element in asgn is the trailing zero and we can ignore it
+        lines = res
+        if lines[0] == "s SATISFIABLE":
+            solution = {}
+            assignment = map(int, lines[1].split()[1:-1])  
+            for var in assignment:
+                if var > 0:
+                    var_name = varToStr[abs(var)]
+                    match = re.match(r"P(\d+)_k(\d+)", var_name)
+                    if match:
+                        node_index, color_index = map(int, match.groups())
+                        node_name = nodes_list[node_index]
+                        solution[node_name] = color_index
+            print("satisfiable", solution)
+        else:
+            print("unsatisfiable")
 
-        #Convert the solution to our names
-        facts = map(lambda x: varToStr[abs(x)], filter(lambda x: x > 0, asgn))
-
-        # Print the solution
-        print("c SOLUTION:")
-        for f in facts:
-            print("c", f)
