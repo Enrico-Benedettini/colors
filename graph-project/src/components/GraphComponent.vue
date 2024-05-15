@@ -185,15 +185,6 @@ export default {
       }
     },
 
-    getRandomColor() {
-      const letters = '0123456789ABCDEF';
-      let color = '#';
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
-    },
-
     updateGraph() {
       this.updateNodes();
       this.updateEdges();
@@ -201,24 +192,28 @@ export default {
     },
 
     submit() {
-      // Gather data to send to the backend
       const data = {
         nodeCount: this.nodeCount,
-        edges: this.edges,
-        colorNumber: this.colorNumber
+        edges: this.edges.map(edge => [edge.source.id, edge.target.id]),
+        colors: this.colorNumber
       };
-      console.log(data)
+      console.log(JSON.stringify(data));
 
-      // Send data to the backend
-      fetch('/api/solve', {
+      fetch('http://127.0.0.1:3000/solve', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
       })
-          .then(response => response.json())
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
           .then(result => {
+            console.log('Result:', result);
             this.result = result.message; // Assuming backend returns { message: "some result" }
             this.updateGraph(); // Optionally update graph colors
           })
