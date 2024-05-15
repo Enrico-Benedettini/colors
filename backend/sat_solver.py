@@ -74,14 +74,18 @@ def generate_constraint(vars):
 
     return clauses
 
-def run_sat_solver(sat_solver_path, constraint):
-    header = f"p cnf {gbi} {len(constraint)}"
-    cnf = "\n".join(" ".join(map(str, clause)) + " 0" for clause in constraint)
-    with open("tmp_prob.cnf", "w") as tmp_file:
-        tmp_file.write("\n".join([header, cnf]))
-    process = Popen([sat_solver_path, "tmp_prob.cnf"], stdout=PIPE, universal_newlines=True)
-    stdout, _ = process.communicate()
-    return stdout
+def run_sat_solver(sat_solver_path, constraint, head, rls):
+    # here we create the cnf file for SATsolver
+    fl = open("tmp_prob.cnf", "w")
+    fl.write("\n".join([head, rls]) + "\n")
+    fl.close()
+
+    # this is for runing SATsolver
+    ms_out = Popen([sat_solver_path + " tmp_prob.cnf"], stdout=PIPE, shell=True).communicate()[0]
+
+    res = ms_out.decode('utf-8')
+    print(res)
+    res = res.strip().split('\n')
 
 def decode_solution(output):
     lines = output.strip().split('\n')
@@ -136,8 +140,10 @@ def gvi(name):
 def solve_sat_problem(file_name, sat_solver_path="z3"):
     read_graph(file_name)
     vars = gen_vars()
-    constraint = generate_constraint(vars)
-    output = run_sat_solver(sat_solver_path, constraint)
+    rules = generate_constraint(vars)
+    head = printHeader(rules)
+    rls = printCnf(rules)
+    output = run_sat_solver(sat_solver_path, rules, head, rls)
     status, solution = decode_solution(output)
     return status, solution
 
