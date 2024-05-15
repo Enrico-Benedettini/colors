@@ -71,7 +71,7 @@ def gen_vars():
 
     # Insert here the code to add mapping from variable numbers to readable variable names.
     # A single variable with a human readable name "var_name" is added, for instance, as follows:
-#    varMap["var_name"] = gvi("var_name")
+    #    varMap["var_name"] = gvi("var_name")
 
     for p in range(len(graph.keys())):
         for c in range(k):
@@ -79,6 +79,8 @@ def gen_vars():
             varMap[vs] = gvi(vs)
     return varMap
 
+
+## Main function to compute the clauses from the variables.
 def genNodesConstr(vars):
 
     clauses = []
@@ -92,12 +94,12 @@ def genNodesConstr(vars):
         clauses.append(node_colors)
 
     # at most one color constraints
-
     for p in range(len(nodes_list)):
         for c_i in range(k):
             for c_j in range(c_i+1,k):
                 clauses.append([-vars["P%d_k%d" % (p, c_i)], -vars["P%d_k%d" % (p, c_j)]])
 
+    # not-adjacent color constraint
     for p_i in range(len(nodes_list)):
         for n in graph[nodes_list[p_i]]:
             for c_i in range(k):
