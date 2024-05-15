@@ -1,2 +1,6 @@
 app.pid
 app.log
+
+.idea/
+SAT_reduction/z3_script.py
+SAT_reduction/*.cnf
