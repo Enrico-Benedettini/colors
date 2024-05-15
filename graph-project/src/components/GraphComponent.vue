@@ -17,10 +17,17 @@
           <label for="colorNumber" class="block text-sm font-medium text-gray-700">Number of Colors:</label>
           <input id="colorNumber" type="number" v-model.number="colorNumber" @change="updateGraph" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
         </div>
+        <div>
+          <h2>Or File Upload: </h2>
+        </div>
+        <div>
+          <label for="colorNumber" class="block text-sm font-medium text-gray-700">File TXT input:</label>
+          <input type="file" @change="handleFileUpload" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+        </div>
 
         <div class="flex justify-center mt-4">
           <button @click="submit" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Submit
+            Resolve Sat Problem
           </button>
         </div>
       </div>
@@ -52,8 +59,8 @@ export default {
       nodeCount: 6,
       edgesInput: "1-5; 4-5; 4-6; 3-2; 5-2; 1-2; 3-4",
       colorNumber: 3,
-      nodeColors: {}, // Store colors for second graph nodes
-      result: null // Store result from backend
+      nodeColors: {},
+      result: null
     };
   },
 
@@ -72,10 +79,9 @@ export default {
       const currentIds = new Set(this.nodes.map(node => node.id));
       const newIds = new Set([...Array(this.nodeCount).keys()].map(x => x + 1));
 
-      // Remove nodes that no longer exist
+
       this.nodes = this.nodes.filter(node => newIds.has(node.id));
 
-      // Add new nodes
       newIds.forEach(id => {
         if (!currentIds.has(id)) {
           this.nodes.push({ id });
@@ -84,13 +90,11 @@ export default {
     },
 
     updateEdges() {
-      // Parse new edges input
       const newEdges = this.edgesInput.split(';').map(pair => {
         const [source, target] = pair.split('-').map(Number);
         return { source, target };
       });
 
-      // Filter edges to only include those that have both nodes present
       this.edges = newEdges.filter(edge =>
           this.nodes.find(node => node.id === edge.source) &&
           this.nodes.find(node => node.id === edge.target)
@@ -107,7 +111,6 @@ export default {
       const width = 300 - margin.left - margin.right; // Adjusted width
       const height = 300 - margin.top - margin.bottom; // Adjusted height
 
-      // Clear previous SVG
       d3.select(container).selectAll('svg').remove();
 
       const svg = d3.select(container)
@@ -117,7 +120,6 @@ export default {
           .append('g')
           .attr('transform', `translate(${margin.left},${margin.top})`);
 
-      // Setup the simulation with updated nodes and edges
       const simulation = d3.forceSimulation(this.nodes)
           .force('link', d3.forceLink(this.edges).id(d => d.id).distance(100))
           .force('charge', d3.forceManyBody().strength(-50))
@@ -205,6 +207,7 @@ export default {
         edges: this.edges,
         colorNumber: this.colorNumber
       };
+      console.log(data)
 
       // Send data to the backend
       fetch('/api/solve', {
@@ -222,6 +225,22 @@ export default {
           .catch(error => {
             console.error('Error:', error);
           });
+    },
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const content = reader.result;
+        const lines = content.split('\n');
+
+        this.nodeCount = Number(lines[0]);
+        this.edgesInput = lines[1];
+
+        this.updateGraph();
+      };
+
+      reader.readAsText(file);
     }
   }
 };
