@@ -8,8 +8,6 @@ app = Flask(__name__)
 CORS(app)
 
 
-
-
 port = os.environ.get("PORT", 3000)
 SATsolver = os.environ.get("SAT_SOLVER_PATH", "z3")
 
@@ -24,12 +22,14 @@ def solve_from_json():
         abort(400, description="Invalid data in request")
 
     with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp:
+            temp.write(f"{data['node_count']} {data['colors']}\n")
+            for edge in data['edges']:
+                temp.write(f"{edge[0]} {edge[1]}\n")
+            temp.flush()
+            temp.seek(0)
+            print(f"File content:\n{temp.readlines()}")
 
-        temp.write(f"{len(data['edges'])} {data['colors']}\n")
-        for edge in data['edges']:
-            temp.write(f"{edge[0]} {edge[1]}\n")
-        temp.flush()
-        status, solution = solve_sat_problem(temp.name, SATsolver)
+            status, solution = solve_sat_problem(temp.name, SATsolver)
 
     # Clean up the temporary file
     os.unlink(temp.name)

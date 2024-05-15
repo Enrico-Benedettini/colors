@@ -193,7 +193,7 @@ export default {
 
     submit() {
       const data = {
-        nodeCount: this.nodeCount,
+        node_count: this.nodeCount,
         edges: this.edges.map(edge => [edge.source.id, edge.target.id]),
         colors: this.colorNumber
       };
