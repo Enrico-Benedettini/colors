@@ -28,7 +28,6 @@ def solve_from_json():
             temp.flush()
             temp.seek(0)
             print(f"File content:\n{temp.readlines()}")
-
             status, solution = solve_sat_problem(temp.name, SATsolver)
 
     # Clean up the temporary file

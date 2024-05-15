@@ -10,6 +10,7 @@ k = 0
 nodes_list = []
 node_to_index = {}
 
+
 def read_graph(file_name):
     global k, graph, nodes_list, node_to_index
     raw_graph = open(file_name, "r").read()
@@ -20,8 +21,14 @@ def read_graph(file_name):
     k = int(raw_graph[0].split()[1])
     raw_graph = raw_graph[1:]
     for line in raw_graph:
+        if not line:
+            continue
         line = line.split()
-        graph[line[0]] = set(line[1:])
+        n = str(line[0])
+        if n in graph:
+            graph[n].update(line[1:])
+        else:
+            graph[n] = set(line[1:])
         for v in line[1:]:
             v = str(v)
             if v in graph:
@@ -35,14 +42,12 @@ def read_graph(file_name):
         node_to_index[nodes_list[n]] = n
 
 
-
 def gen_vars():
-
     varMap = {}
 
     # Insert here the code to add mapping from variable numbers to readable variable names.
     # A single variable with a human readable name "var_name" is added, for instance, as follows:
-#    varMap["var_name"] = gvi("var_name")
+    #    varMap["var_name"] = gvi("var_name")
 
     for p in range(len(graph.keys())):
         for c in range(k):
@@ -50,8 +55,8 @@ def gen_vars():
             varMap[vs] = gvi(vs)
     return varMap
 
+
 def generate_constraint(vars):
-    
     clauses = []
 
     # at least one color constraint
@@ -64,7 +69,7 @@ def generate_constraint(vars):
     # at most one color constraints
     for p in range(len(nodes_list)):
         for c_i in range(k):
-            for c_j in range(c_i+1,k):
+            for c_j in range(c_i + 1, k):
                 clauses.append([-vars["P%d_k%d" % (p, c_i)], -vars["P%d_k%d" % (p, c_j)]])
 
     for p_i in range(len(nodes_list)):
@@ -73,6 +78,7 @@ def generate_constraint(vars):
                 clauses.append([-vars["P%d_k%d" % (p_i, c_i)], -vars["P%d_k%d" % (node_to_index[n], c_i)]])
 
     return clauses
+
 
 def run_sat_solver(sat_solver_path, constraint, head, rls):
     # here we create the cnf file for SATsolver
@@ -86,12 +92,14 @@ def run_sat_solver(sat_solver_path, constraint, head, rls):
     res = ms_out.decode('utf-8')
     print(res)
     res = res.strip().split('\n')
+    return res
+
 
 def decode_solution(output):
-    lines = output.strip().split('\n')
+    lines = output
     if lines[0] == "s SATISFIABLE":
         solution = {}
-        assignment = map(int, lines[1].split()[1:-1])  
+        assignment = map(int, lines[1].split()[1:-1])
         for var in assignment:
             if var > 0:
                 var_name = varToStr[abs(var)]
@@ -104,8 +112,9 @@ def decode_solution(output):
     else:
         return "unsatisfiable", {}
 
+
 # A helper function to print the cnf header
-def printHeader(rules):
+def printHeader(rules, vars):
     global gbi
     global varToStr
     n = len(rules)
@@ -122,13 +131,15 @@ def printHeader(rules):
     str += "p cnf %d %d" % (gbi, n)
     return str
 
+
 # A helper function to print a set of clauses cls
 def printCnf(cls):
     return "\n".join(map(lambda x: "%s 0" % " ".join(map(str, x)), cls))
 
 
 def printClause(cl):
-    print(map(lambda x: "%s%s" % (x < 0 and eval("'-'") or eval ("''"), varToStr[abs(x)]) , cl))
+    print(map(lambda x: "%s%s" % (x < 0 and eval("'-'") or eval("''"), varToStr[abs(x)]), cl))
+
 
 def gvi(name):
     global gbi
@@ -137,13 +148,13 @@ def gvi(name):
     varToStr.append(name)
     return gbi
 
+
 def solve_sat_problem(file_name, sat_solver_path="z3"):
     read_graph(file_name)
     vars = gen_vars()
     rules = generate_constraint(vars)
-    head = printHeader(rules)
+    head = printHeader(rules, vars)
     rls = printCnf(rules)
     output = run_sat_solver(sat_solver_path, rules, head, rls)
     status, solution = decode_solution(output)
     return status, solution
-
