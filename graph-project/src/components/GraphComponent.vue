@@ -1,5 +1,19 @@
 <template>
   <div class="p-6">
+    <!-- Problem Description Section -->
+    <div class="mb-8 flex w-3/4 mx-auto justify-center items-center p-6 bg-gray-100 rounded-md">
+      <div class="text-center">
+        <h2 class="text-2xl font-bold text-gray-800">Graph Coloring Problem</h2>
+        <p class="mt-4 text-lg text-gray-700">
+          Companies printing maps are always trying to save money by buying the smallest amount of ink cartridge:
+          given a map, they want to know if it is possible to print the map with <strong>k</strong> colors.
+          Given an undirected graph <strong>G = (V, E)</strong> and an integer <strong>k</strong>,
+          is there a way to color the vertices with <strong>k</strong> colors such that adjacent vertices are colored differently?
+        </p>
+      </div>
+      <img src="/color.png" alt="Problem Description" class="w-1/4 ml-4">
+    </div>
+
     <div class="flex items-start mb-6">
       <!-- Input Section -->
       <div class="w-1/4 space-y-4">
@@ -17,12 +31,11 @@
           <label for="colorNumber" class="block text-sm font-medium text-gray-700">Number of Colors:</label>
           <input id="colorNumber" type="number" v-model.number="colorNumber" @change="updateGraph" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
         </div>
+
         <div>
-          <h2>Or File Upload: </h2>
-        </div>
-        <div>
-          <label for="colorNumber" class="block text-sm font-medium text-gray-700">File TXT input:</label>
-          <input type="file" @change="handleFileUpload" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+          <h2 class="text-sm font-medium text-gray-700">Or File Upload:</h2>
+          <label for="fileInput" class="block text-sm font-medium text-gray-700">File TXT input:</label>
+          <input id="fileInput" type="file" @change="handleFileUpload" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
         </div>
 
         <div class="flex justify-center mt-4">
@@ -35,16 +48,22 @@
       <!-- Graph Containers -->
       <div class="flex-grow flex space-x-4 ml-4">
         <div class="w-1/2 p-4 border border-gray-300 rounded-md shadow-sm" ref="chartContainer1"></div>
-        <div class="w-1/2 p-4 border border-gray-300 rounded-md shadow-sm" ref="chartContainer2"></div>
+        <div v-if="this.result" class="w-1/2 p-4 border border-gray-300 rounded-md shadow-sm">
+          <p class="text-lg font-medium text-gray-700 text-center mb-4">{{ result.status }}</p>
+          <div ref="chartContainer2"></div>
+        </div>
       </div>
     </div>
 
     <!-- Result Message -->
     <div v-if="result" class="mt-6 text-center">
-      <p class="text-lg font-medium text-gray-700">{{ result }}</p>
+      <p class="text-lg font-medium text-gray-700">{{ result.message }}</p>
     </div>
   </div>
 </template>
+
+
+
 
 <script>
 import * as d3 from 'd3';
@@ -79,7 +98,6 @@ export default {
       const currentIds = new Set(this.nodes.map(node => node.id));
       const newIds = new Set([...Array(this.nodeCount).keys()].map(x => x + 1));
 
-
       this.nodes = this.nodes.filter(node => newIds.has(node.id));
 
       newIds.forEach(id => {
@@ -96,14 +114,16 @@ export default {
       });
 
       this.edges = newEdges.filter(edge =>
-          this.nodes.find(node => node.id === edge.source) &&
-          this.nodes.find(node => node.id === edge.target)
+        this.nodes.find(node => node.id === edge.source) &&
+        this.nodes.find(node => node.id === edge.target)
       );
     },
 
     createCharts() {
       this.createChart(this.$refs.chartContainer1, false);
-      this.createChart(this.$refs.chartContainer2, true);
+      if (this.result) {
+        this.createChart(this.$refs.chartContainer2, true);
+      }
     },
 
     createChart(container, colorNodes) {
@@ -114,57 +134,57 @@ export default {
       d3.select(container).selectAll('svg').remove();
 
       const svg = d3.select(container)
-          .append('svg')
-          .attr('width', width + margin.left + margin.right)
-          .attr('height', height + margin.top + margin.bottom)
-          .append('g')
-          .attr('transform', `translate(${margin.left},${margin.top})`);
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
 
       const simulation = d3.forceSimulation(this.nodes)
-          .force('link', d3.forceLink(this.edges).id(d => d.id).distance(100))
-          .force('charge', d3.forceManyBody().strength(-50))
-          .force('center', d3.forceCenter(width / 2, height / 2))
-          .on('tick', ticked);
+        .force('link', d3.forceLink(this.edges).id(d => d.id).distance(100))
+        .force('charge', d3.forceManyBody().strength(-50))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .on('tick', ticked);
 
       const link = svg.append('g')
-          .attr('class', 'links')
-          .selectAll('line')
-          .data(this.edges)
-          .enter().append('line')
-          .attr('stroke', '#999')
-          .attr('stroke-opacity', 0.6)
-          .attr('stroke-width', 2);
+        .attr('class', 'links')
+        .selectAll('line')
+        .data(this.edges)
+        .enter().append('line')
+        .attr('stroke', '#999')
+        .attr('stroke-opacity', 0.6)
+        .attr('stroke-width', 2);
 
       const node = svg.append('g')
-          .attr('class', 'nodes')
-          .selectAll('circle')
-          .data(this.nodes)
-          .enter().append('circle')
-          .attr('r', 10)
-          .attr('fill', d => colorNodes ? (this.nodeColors[d.id] || 'black') : 'black')
-          .call(d3.drag()
-              .on('start', dragstarted)
-              .on('drag', dragged)
-              .on('end', dragended));
+        .attr('class', 'nodes')
+        .selectAll('circle')
+        .data(this.nodes)
+        .enter().append('circle')
+        .attr('r', 10)
+        .attr('fill', d => colorNodes ? (this.nodeColors[d.id] || 'black') : 'black')
+        .call(d3.drag()
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended));
 
       const text = svg.append('g')
-          .attr('class', 'labels')
-          .selectAll('text')
-          .data(this.nodes)
-          .enter().append('text')
-          .text(d => d.id);
+        .attr('class', 'labels')
+        .selectAll('text')
+        .data(this.nodes)
+        .enter().append('text')
+        .text(d => d.id);
 
       function ticked() {
         link.attr('x1', d => d.source.x)
-            .attr('y1', d => d.source.y)
-            .attr('x2', d => d.target.x)
-            .attr('y2', d => d.target.y);
+          .attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x)
+          .attr('y2', d => d.target.y);
 
         node.attr('cx', d => d.x)
-            .attr('cy', d => d.y);
+          .attr('cy', d => d.y);
 
         text.attr('x', d => d.x + 15)
-            .attr('y', d => d.y + 5);
+          .attr('y', d => d.y + 5);
       }
 
       function dragstarted(event, d) {
@@ -206,21 +226,22 @@ export default {
         },
         body: JSON.stringify(data)
       })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then(result => {
-            console.log('Result:', result);
-            this.result = result.message; // Assuming backend returns { message: "some result" }
-            this.updateGraph(); // Optionally update graph colors
-          })
-          .catch(error => {
-            console.error('Error:', error);
-          });
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(result => {
+          console.log('Result:', result);
+          this.result = result; // Assuming backend returns { message: "some result", status: "some status" }
+          this.updateGraph(); // Optionally update graph colors
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
     },
+
     handleFileUpload(event) {
       const file = event.target.files[0];
       const reader = new FileReader();
