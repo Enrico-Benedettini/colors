@@ -127,6 +127,7 @@ export default {
     },
 
     createChart(container, colorNodes) {
+      console.log(container, colorNodes)
       const margin = { top: 30, right: 30, bottom: 30, left: 30 };
       const width = 300 - margin.left - margin.right; // Adjusted width
       const height = 300 - margin.top - margin.bottom; // Adjusted height
@@ -134,57 +135,59 @@ export default {
       d3.select(container).selectAll('svg').remove();
 
       const svg = d3.select(container)
-        .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
+          .append('svg')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', height + margin.top + margin.bottom)
+          .append('g')
+          .attr('transform', `translate(${margin.left},${margin.top})`);
 
       const simulation = d3.forceSimulation(this.nodes)
-        .force('link', d3.forceLink(this.edges).id(d => d.id).distance(100))
-        .force('charge', d3.forceManyBody().strength(-50))
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        .on('tick', ticked);
+          .force('link', d3.forceLink(this.edges).id(d => d.id).distance(100))
+          .force('charge', d3.forceManyBody().strength(-50))
+          .force('center', d3.forceCenter(width / 2, height / 2))
+          .on('tick', ticked);
 
       const link = svg.append('g')
-        .attr('class', 'links')
-        .selectAll('line')
-        .data(this.edges)
-        .enter().append('line')
-        .attr('stroke', '#999')
-        .attr('stroke-opacity', 0.6)
-        .attr('stroke-width', 2);
+          .attr('class', 'links')
+          .selectAll('line')
+          .data(this.edges)
+          .enter().append('line')
+          .attr('stroke', '#999')
+          .attr('stroke-opacity', 0.6)
+          .attr('stroke-width', 2);
+
+      const color = d3.scaleOrdinal(d3.schemeCategory10);
 
       const node = svg.append('g')
-        .attr('class', 'nodes')
-        .selectAll('circle')
-        .data(this.nodes)
-        .enter().append('circle')
-        .attr('r', 10)
-        .attr('fill', d => colorNodes ? (this.nodeColors[d.id] || 'black') : 'black')
-        .call(d3.drag()
-          .on('start', dragstarted)
-          .on('drag', dragged)
-          .on('end', dragended));
+          .attr('class', 'nodes')
+          .selectAll('circle')
+          .data(this.nodes)
+          .enter().append('circle')
+          .attr('r', 10)
+          .attr('fill', d => colorNodes ? color(this.nodeColors[d.id]) : 'black')
+          .call(d3.drag()
+              .on('start', dragstarted)
+              .on('drag', dragged)
+              .on('end', dragended));
 
       const text = svg.append('g')
-        .attr('class', 'labels')
-        .selectAll('text')
-        .data(this.nodes)
-        .enter().append('text')
-        .text(d => d.id);
+          .attr('class', 'labels')
+          .selectAll('text')
+          .data(this.nodes)
+          .enter().append('text')
+          .text(d => d.id);
 
       function ticked() {
         link.attr('x1', d => d.source.x)
-          .attr('y1', d => d.source.y)
-          .attr('x2', d => d.target.x)
-          .attr('y2', d => d.target.y);
+            .attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x)
+            .attr('y2', d => d.target.y);
 
         node.attr('cx', d => d.x)
-          .attr('cy', d => d.y);
+            .attr('cy', d => d.y);
 
         text.attr('x', d => d.x + 15)
-          .attr('y', d => d.y + 5);
+            .attr('y', d => d.y + 5);
       }
 
       function dragstarted(event, d) {
@@ -226,21 +229,21 @@ export default {
         },
         body: JSON.stringify(data)
       })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then(result => {
-          console.log('Result:', result);
-          this.result = result; // Assuming backend returns { message: "some result", status: "some status" }
-          this.updateGraph(); // Optionally update graph colors
-        })
-        .catch(error => {
-          console.error('Error:', error);
-        });
+          .then(response => response.json())
+          .then(result => {
+            this.result = result;
+            this.nodeColors = result.solution; // Ensure this matches the server response
+            this.updateGraph();
+            this.$nextTick(() => {  // Ensure DOM updates are completed
+              this.createCharts(); // Now create both charts
+            });
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to fetch data: ' + error.message);
+          });
     },
+
 
     handleFileUpload(event) {
       const file = event.target.files[0];
@@ -258,7 +261,17 @@ export default {
 
       reader.readAsText(file);
     }
-  }
+  },
+  watch: {
+    result(newResult, oldResult) {
+      if (newResult !== oldResult) {
+        this.$nextTick(() => {
+          this.createCharts();  // Recreate charts when result changes
+        });
+      }
+    }
+  },
+
 };
 </script>
 
