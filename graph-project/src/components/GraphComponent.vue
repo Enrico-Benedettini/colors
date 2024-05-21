@@ -49,7 +49,7 @@
       <div class="flex-grow flex space-x-4 ml-4">
         <div class="w-1/2 p-4 border border-gray-300 rounded-md shadow-sm" ref="chartContainer1"></div>
         <div v-if="this.result" class="w-1/2 p-4 border border-gray-300 rounded-md shadow-sm">
-          <p class="text-lg font-medium text-gray-700 text-center mb-4">{{ result.status }}</p>
+          <p class="text-lg font-medium text-gray-700 text-center mb-4">{{ result.status.toUpperCase() }}</p>
           <div ref="chartContainer2"></div>
         </div>
       </div>
@@ -253,10 +253,18 @@ export default {
         const content = reader.result;
         const lines = content.split('\n');
 
-        this.nodeCount = Number(lines[0]);
-        this.edgesInput = lines[1];
+        if (lines.length < 2) {
+              console.error('Invalid file format');
+              return;
+            }
 
-        this.updateGraph();
+            this.nodeCount = Number(lines[0].trim());
+            this.colorNumber = Number(lines[1].trim());
+
+            const edges = lines.slice(2).map(line => line.trim());
+            this.edgesInput = edges.join(';');
+
+            this.updateGraph();
       };
 
       reader.readAsText(file);
