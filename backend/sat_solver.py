@@ -13,6 +13,10 @@ node_to_index = {}
 
 def read_graph(file_name):
     global k, graph, nodes_list, node_to_index
+    #clear otherwise, once its unsatisfiable, it will always be unsatisfiable
+    graph.clear()
+    nodes_list.clear()
+    node_to_index.clear()
     raw_graph = open(file_name, "r").read()
     raw_graph = raw_graph.split("\n")
     if len(raw_graph[0].split()) != 2:
@@ -95,24 +99,6 @@ def run_sat_solver(sat_solver_path, constraint, head, rls):
     return res
 
 
-def decode_solution(output):
-    lines = output
-    if lines[0] == "s SATISFIABLE":
-        solution = {}
-        assignment = map(int, lines[1].split()[1:-1])
-        for var in assignment:
-            if var > 0:
-                var_name = varToStr[abs(var)]
-                match = re.match(r"P(\d+)_k(\d+)", var_name)
-                if match:
-                    node_index, color_index = map(int, match.groups())
-                    node_name = nodes_list[node_index]
-                    solution[node_name] = color_index
-        return "satisfiable", solution
-    else:
-        return "unsatisfiable", {}
-
-
 # A helper function to print the cnf header
 def printHeader(rules, vars):
     global gbi
@@ -149,12 +135,34 @@ def gvi(name):
     return gbi
 
 
+def decode_solution(output):
+    lines = output
+    if lines[0] == "s SATISFIABLE":
+        solution = {}
+        assignment = map(int, lines[1].split()[1:-1])
+        for var in assignment:
+            if var > 0:
+                var_name = varToStr[abs(var)]
+                match = re.match(r"P(\d+)_k(\d+)", var_name)
+                if match:
+                    node_index, color_index = map(int, match.groups())
+                    node_name = nodes_list[node_index]
+                    solution[node_name] = color_index
+        return "satisfiable", solution
+    else:
+        return "unsatisfiable", {}
+
+
 def solve_sat_problem(file_name, sat_solver_path="z3"):
+    #parse
     read_graph(file_name)
+    #generate rules and variables
     vars = gen_vars()
     rules = generate_constraint(vars)
     head = printHeader(rules, vars)
     rls = printCnf(rules)
+    #solve
     output = run_sat_solver(sat_solver_path, rules, head, rls)
+    #decode
     status, solution = decode_solution(output)
     return status, solution

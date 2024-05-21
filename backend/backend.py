@@ -18,19 +18,22 @@ def solve_from_json():
     data = request.get_json()
     print(f"Received data: {data}")
 
-    if not data or 'edges' not in data or 'colors' not in data:
+    if not data or 'edges' not in data or 'colors' not in data or 'node_count' not in data:
         abort(400, description="Invalid data in request")
 
     with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp:
+        
             temp.write(f"{data['node_count']} {data['colors']}\n")
             for edge in data['edges']:
                 temp.write(f"{edge[0]} {edge[1]}\n")
+                
             temp.flush()
             temp.seek(0)
+            
             print(f"File content:\n{temp.readlines()}")
+            
             status, solution = solve_sat_problem(temp.name, SATsolver)
 
-    # Clean up the temporary file
     os.unlink(temp.name)
 
     return jsonify({"status": status, "solution": solution})
