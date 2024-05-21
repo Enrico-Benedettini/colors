@@ -1,6 +1,5 @@
 <template>
   <div class="p-6">
-    <!-- Problem Description Section -->
     <div class="mb-8 flex w-3/4 mx-auto justify-center items-center p-6 bg-gray-100 rounded-md">
       <div class="text-center">
         <h2 class="text-2xl font-bold text-gray-800">Graph Coloring Problem</h2>
@@ -15,7 +14,6 @@
     </div>
 
     <div class="flex items-start mb-6">
-      <!-- Input Section -->
       <div class="w-1/4 space-y-4">
         <div>
           <label for="nodeCount" class="block text-sm font-medium text-gray-700">Number of Nodes:</label>
@@ -45,7 +43,6 @@
         </div>
       </div>
 
-      <!-- Graph Containers -->
       <div class="flex-grow flex space-x-4 ml-4">
         <div class="w-1/2 p-4 border border-gray-300 rounded-md shadow-sm" ref="chartContainer1"></div>
         <div v-if="this.result" class="w-1/2 p-4 border border-gray-300 rounded-md shadow-sm">
@@ -55,7 +52,6 @@
       </div>
     </div>
 
-    <!-- Result Message -->
     <div v-if="result" class="mt-6 text-center">
       <p class="text-lg font-medium text-gray-700">{{ result.message }}</p>
     </div>
@@ -232,10 +228,10 @@ export default {
           .then(response => response.json())
           .then(result => {
             this.result = result;
-            this.nodeColors = result.solution; // Ensure this matches the server response
+            this.nodeColors = result.solution;
             this.updateGraph();
-            this.$nextTick(() => {  // Ensure DOM updates are completed
-              this.createCharts(); // Now create both charts
+            this.$nextTick(() => {
+              this.createCharts();
             });
           })
           .catch(error => {
@@ -274,7 +270,7 @@ export default {
     result(newResult, oldResult) {
       if (newResult !== oldResult) {
         this.$nextTick(() => {
-          this.createCharts();  // Recreate charts when result changes
+          this.createCharts();
         });
       }
     }
