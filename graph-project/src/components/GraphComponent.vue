@@ -13,48 +13,49 @@
       <img src="/color.png" alt="Problem Description" class="w-1/4 ml-4">
     </div>
 
-    <div class="flex items-start mb-6">
-      <div class="w-1/4 space-y-4">
-        <div>
-          <label for="nodeCount" class="block text-sm font-medium text-gray-700">Number of Nodes:</label>
-          <input id="nodeCount" type="number" v-model.number="nodeCount" @change="updateGraph" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-        </div>
-
-        <div>
-          <label for="edges" class="block text-sm font-medium text-gray-700">Edges (format: source-target, e.g., 1-2; 2-3):</label>
-          <input id="edges" type="text" v-model="edgesInput" @change="updateGraph" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-        </div>
-
-        <div>
-          <label for="colorNumber" class="block text-sm font-medium text-gray-700">Number of Colors:</label>
-          <input id="colorNumber" type="number" v-model.number="colorNumber" @change="updateGraph" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-        </div>
-
-        <div>
-          <h2 class="text-sm font-medium text-gray-700">Or File Upload:</h2>
-          <label for="fileInput" class="block text-sm font-medium text-gray-700">File TXT input:</label>
-          <input id="fileInput" type="file" @change="handleFileUpload" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-        </div>
-
-        <div class="flex justify-center mt-4">
-          <button @click="submit" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Resolve Sat Problem
-          </button>
-        </div>
-      </div>
-
-      <div class="flex-grow flex space-x-4 ml-4">
-        <div class="w-1/2 p-4 border border-gray-300 rounded-md shadow-sm" ref="chartContainer1"></div>
-        <div v-if="this.result" class="w-1/2 p-4 border border-gray-300 rounded-md shadow-sm">
-          <p class="text-lg font-medium text-gray-700 text-center mb-4">{{ result.status.toUpperCase() }}</p>
-          <div ref="chartContainer2"></div>
-        </div>
-      </div>
+    <div class="flex justify-center items-center mb-6">
+  <div class="justify-center w-1/4 space-y-4">
+    <div>
+      <label for="nodeCount" class="block text-sm font-medium text-gray-700">Number of Nodes:</label>
+      <input id="nodeCount" type="number" v-model.number="nodeCount" @change="updateGraph" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
     </div>
 
-    <div v-if="result" class="mt-6 text-center">
-      <p class="text-lg font-medium text-gray-700">{{ result.message }}</p>
+    <div>
+      <label for="edges" class="block text-sm font-medium text-gray-700">Edges (format: source-target, e.g., 1-2; 2-3):</label>
+      <input id="edges" type="text" v-model="edgesInput" @change="updateGraph" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
     </div>
+
+    <div>
+      <label for="colorNumber" class="block text-sm font-medium text-gray-700">Number of Colors:</label>
+      <input id="colorNumber" type="number" v-model.number="colorNumber" @change="updateGraph" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+    </div>
+
+    <div>
+      <h2 class="text-sm font-medium text-gray-700">Or File Upload:</h2>
+      <label for="fileInput" class="block text-sm font-medium text-gray-700">File TXT input:</label>
+      <input id="fileInput" type="file" @change="handleFileUpload" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+    </div>
+
+    <div class="flex justify-center mt-4">
+      <button @click="submit" class="px-4 py-2 bg-indigo-600 text-white font-medium rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        Resolve Sat Problem
+      </button>
+    </div>
+  </div>
+
+  <div class="flex space-x-4 ml-4 justify-center">
+    <div class="p-4 border border-gray-300 rounded-md shadow-sm" ref="chartContainer1"></div>
+    <div v-if="this.result" class="p-4 border border-gray-300 rounded-md shadow-sm">
+      <p class="text-lg font-medium text-gray-700 text-center mb-4">{{ result.status.toUpperCase() }}</p>
+      <div ref="chartContainer2"></div>
+    </div>
+  </div>
+</div>
+
+<div v-if="result" class="mt-6 text-center">
+  <p class="text-lg font-medium text-gray-700">{{ result.message }}</p>
+</div>
+
   </div>
 </template>
 
