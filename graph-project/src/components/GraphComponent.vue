@@ -243,28 +243,33 @@ export default {
 
 
     handleFileUpload(event) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
+      try {
+        const file = event.target.files[0];
+        const reader = new FileReader();
 
-      reader.onload = () => {
-        const content = reader.result;
-        const lines = content.split('\n');
+        reader.onload = () => {
+          const content = reader.result;
+          const lines = content.split('\n');
 
-        if (lines.length < 2) {
-              console.error('Invalid file format');
-              return;
-            }
+          if (lines.length < 2) {
+                console.error('Invalid file format');
+                return;
+              }
 
-            this.nodeCount = Number(lines[0].trim());
-            this.colorNumber = Number(lines[1].trim());
+              this.nodeCount = Number(lines[0].trim());
+              this.colorNumber = Number(lines[1].trim());
 
-            const edges = lines.slice(2).map(line => line.trim());
-            this.edgesInput = edges.join(';');
+              const edges = lines.slice(2).map(line => line.trim());
+              this.edgesInput = edges.join(';');
 
-            this.updateGraph();
-      };
+              this.updateGraph();
+        };
 
-      reader.readAsText(file);
+        reader.readAsText(file);
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to read file: ' + error.message);
+      }
     }
   },
   watch: {
