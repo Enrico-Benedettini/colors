@@ -124,7 +124,6 @@ export default {
     },
 
     createChart(container, colorNodes) {
-      console.log(container, colorNodes)
       const margin = { top: 30, right: 30, bottom: 30, left: 30 };
       const width = 300 - margin.left - margin.right; // Adjusted width
       const height = 300 - margin.top - margin.bottom; // Adjusted height
@@ -211,13 +210,33 @@ export default {
       this.createCharts();
     },
 
+    isValidEdgeFormat(edgeString) {
+      console.log(edgeString)
+      const edgeFormat = /^\d+-\d+$/;
+      return edgeFormat.test(edgeString);
+    },
+
     submit() {
       const data = {
         node_count: this.nodeCount,
-        edges: this.edges.map(edge => [edge.source.id, edge.target.id]),
+        edges: [],
         colors: this.colorNumber
       };
-      console.log(JSON.stringify(data));
+      if (this.edges.length === 0) {
+        console.error('Error: No edges found');
+        this.nodeCount = 0;
+        this.updateGraph();
+        return;
+      }
+      for (const edge of this.edges) {
+
+        const edgeString = `${edge.source.id}-${edge.target.id}`;
+        if (this.isValidEdgeFormat(edgeString)) {
+          data.edges.push([edge.source.id, edge.target.id]);
+        } else {
+          console.error(`Error: Edge format is incorrect for edge ${edgeString}`);
+        }
+      }
 
       fetch('http://127.0.0.1:3000/solve', {
         method: 'POST',
